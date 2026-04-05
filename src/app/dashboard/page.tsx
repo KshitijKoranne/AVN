@@ -17,12 +17,14 @@ export default async function DashboardPage() {
     .single()
 
   // Fetch last 7 pain logs for the trend mini chart
-  const { data: recentLogs } = await supabase
+  const { data: recentLogsRaw } = await supabase
     .from('pain_logs')
     .select('log_date, intensity')
     .eq('user_id', user.id)
     .order('log_date', { ascending: false })
     .limit(7)
+
+  const recentLogs = recentLogsRaw as { log_date: string; intensity: number }[] | null
 
   // Check if logged today
   const today = new Date().toISOString().split('T')[0]

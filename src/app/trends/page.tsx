@@ -11,12 +11,19 @@ export default async function TrendsPage() {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29)
 
-  const { data: logs } = await supabase
+  const { data: logsRaw } = await supabase
     .from('pain_logs')
     .select('log_date, intensity, locations, triggers')
     .eq('user_id', user.id)
     .gte('log_date', thirtyDaysAgo.toISOString().split('T')[0])
     .order('log_date', { ascending: true })
+
+  const logs = logsRaw as {
+    log_date: string
+    intensity: number
+    locations: string[]
+    triggers: string[]
+  }[] | null
 
   const logMap = new Map((logs ?? []).map(l => [l.log_date, l]))
 
@@ -49,9 +56,10 @@ export default async function TrendsPage() {
       triggerCounts[t] = (triggerCounts[t] ?? 0) + 1
     })
   })
-  const topTrigger = Object.entries(triggerCounts)
-    .sort((a, b) => b[1] - a[1])[0]?.[0]
-    ?.replace(/_/g, ' ')
+  const topTriggerEntry = Object.entries(triggerCounts).sort((a, b) => b[1] - a[1])[0]
+  const topTriggerKey = topTriggerEntry?.[0] ?? null
+  const topTriggerLabel = topTriggerKey?.replace(/_/g, ' ') ?? null
+  const topTriggerCount = topTriggerEntry?.[1] ?? 0
 
   return (
     <div className="min-h-screen bg-surface pb-36">
@@ -136,16 +144,16 @@ export default async function TrendsPage() {
         </div>
 
         {/* Top trigger */}
-        {topTrigger && (
+        {topTriggerLabel && (
           <div className="bg-surface-container rounded-2xl p-5">
             <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mb-2">
               Most common trigger
             </p>
             <p className="font-headline font-bold text-xl text-on-surface capitalize">
-              {topTrigger}
+              {topTriggerLabel}
             </p>
             <p className="font-label text-xs text-on-surface-variant mt-1">
-              Appeared {triggerCounts[topTrigger.replace(/ /g, '_')] ?? triggerCounts[Object.keys(triggerCounts)[0]]} times this month
+              Appeared {topTriggerCount} times this month
             </p>
           </div>
         )}
