@@ -60,7 +60,7 @@ export default function ProfilePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      const { data: profile } = await supabase
+      const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', user.id)
@@ -92,7 +92,7 @@ export default function ProfilePage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    await supabase.from('profiles').update({
+    await (supabase.from('profiles') as any).update({
       full_name: fullName,
       date_of_birth: dob || null,
       gender: gender || null,

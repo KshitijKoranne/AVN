@@ -83,7 +83,7 @@ export default function LogPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    const { error: insertError } = await supabase.from('pain_logs').insert({
+    const { error: insertError } = await (supabase.from('pain_logs') as any).insert({
       user_id: user.id,
       locations,
       intensity,
